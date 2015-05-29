@@ -26,6 +26,8 @@ You have to install the plugins «Polylang» and «Polylang Theme Strings» on y
 
 Like you can see, the «Polylang Theme Strings» is perfectly integrate with the «Polylang» plugin and works in automatically mode – it is comfortable, simple, and useful!
 
+Learn more in http://modeewine.com/en-polylang-theme-strings
+
 == Installation ==
 
 1. Make sure you are using WordPress 3.8 or later and that your server is running PHP 5.0 or later.
