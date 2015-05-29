@@ -36,6 +36,7 @@ Like you can see, the «Polylang Theme Strings» is perfectly integrate with the
 1. Activate the plugin through the 'Plugins' menu in WordPress.
 1. Go to the languages settings page.
 1. When you are in the settings of plugin (Polylang) in the tab «Strings translation» the «Polylang Theme Strings» scans automatically the active theme of your project, find all the code strings that needed to be translated, adds them to the register and display them on that page to give the user the ability to translate these strings.
+1. Learn more in http://modeewine.com/en-polylang-theme-strings
 
 == Changelog ==
 
