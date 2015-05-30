@@ -1,5 +1,5 @@
 === Polylang Theme Strings ===
-Contributors: Modeewine
+Contributors: modeewine
 Donate link: http://modeewine.com/en-donation
 Tags: extension, polylang, multilingual, translate, translation, language, multilanguage, international, localization
 Requires at least: 3.8
@@ -26,22 +26,26 @@ You have to install the plugins «Polylang» and «Polylang Theme Strings» on y
 
 Like you can see, the «Polylang Theme Strings» is perfectly integrate with the «Polylang» plugin and works in automatically mode – it is comfortable, simple, and useful!
 
-Learn more in http://modeewine.com/en-polylang-theme-strings
+Learn more in <http://modeewine.com/en-polylang-theme-strings>.
 
 == Installation ==
 
 1. Make sure you are using WordPress 3.8 or later and that your server is running PHP 5.0 or later.
-1. Install multilingual plugin «Polylang» and activate activate it.
+1. Install multilingual plugin «Polylang» and activate it.
 1. Download the plugin «Polylang Theme Strings».
 1. Extract all the files.
 1. Upload everything (keeping the directory structure) to the `/wp-content/plugins/` directory.
 1. Activate the plugin through the 'Plugins' menu in WordPress.
-1. Go to the languages settings page.
+1. Go to the languages (Polylang) settings page.
 1. When you are in the settings of plugin (Polylang) in the tab «Strings translation» the «Polylang Theme Strings» scans automatically the active theme of your project, find all the code strings that needed to be translated, adds them to the register and display them on that page to give the user the ability to translate these strings.
-1. Learn more in http://modeewine.com/en-polylang-theme-strings
+1. Learn more in <http://modeewine.com/en-polylang-theme-strings>.
+
+== Screenshots ==
+
+1. Screen of «Polylang» strings translate page settings and when «Polylang Theme Strings» in action.
 
 == Changelog ==
 
 = 1.0 (2015-05-29) =
 
-* First version.
+* First release.
