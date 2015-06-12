@@ -14,8 +14,8 @@
 
     class MW_Polylang_Theme_Strings
     {
-        private $prefix = 'mw_polylang_strings_';
-        private $pll_f = 'pll_register_string';
+        static $prefix = 'mw_polylang_strings_';
+        static $pll_f = 'pll_register_string';
         private $paths;
         private $db;
 
@@ -37,7 +37,9 @@
 
         public function Uninstall()
         {
-            $this->db->query("DELETE FROM `{$this->db->prefix}options` WHERE `option_name` LIKE '{$this->prefix}%'");
+            global $wpdb;
+
+            $wpdb->query("DELETE FROM `" . $wpdb->prefix . "options` WHERE `option_name` LIKE '" . self::$prefix . "%'");
         }
 
         private function Init()
@@ -84,9 +86,9 @@
             if
             (
                 is_admin() &&
-                function_exists($this->pll_f) &&
-                $_REQUEST['page'] == 'mlang' &&
-                $_REQUEST['tab'] == 'strings'
+                function_exists(self::$pll_f) &&
+                (isset($_REQUEST['page']) && $_REQUEST['page'] == 'mlang') &&
+                (isset($_REQUEST['tab']) && $_REQUEST['tab'] == 'strings')
             )
             {
                 $data = array();
@@ -111,15 +113,15 @@
                     }
                 }
 
-                update_option($this->prefix . $this->Path_Get('theme_dir_name') . '_data', $data);
+                update_option(self::$prefix . $this->Path_Get('theme_dir_name') . '_data', $data);
             }
         }
 
         public function PLL_Strings_Init()
         {
-            if (function_exists($this->pll_f))
+            if (function_exists(self::$pll_f))
             {
-                $data = get_option($this->prefix . $this->Path_Get('theme_dir_name') . '_data');
+                $data = get_option(self::$prefix . $this->Path_Get('theme_dir_name') . '_data');
 
                 if (is_array($data) && count($data))
                 {
