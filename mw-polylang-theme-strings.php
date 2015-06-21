@@ -4,7 +4,7 @@
     Plugin Name: Polylang Theme Strings
     Plugin URI: http://modeewine.com/en-polylang-theme-strings
     Description: Automatic scanning of strings translation in the theme and registration of them in Polylang plugin.
-    Version: 1.1
+    Version: 2.0
     Author: Modeewine
     Author URI: http://modeewine.com
     License: GPL2
@@ -17,7 +17,6 @@
         static $prefix = 'mw_polylang_strings_';
         static $pll_f = 'pll_register_string';
         private $paths;
-        private $db;
 
         function __construct()
         {
@@ -44,12 +43,13 @@
 
         private function Init()
         {
-            global $wpdb;
-            $this->db = &$wpdb;
-
             $this->Paths_Init();
             $this->Plugin_Hooks_Init();
-            $this->PLL_Strings_Scan();
+
+            if (self::Is_PLL_Strings_Settings_Page())
+            {
+                $this->Themes_PLL_Strings_Scan();
+            }
         }
 
         private function Paths_Init()
@@ -60,6 +60,7 @@
 
             $this->paths = Array(
                 'plugin_file_index' => __FILE__,
+                'themes'            => WP_CONTENT_DIR . get_theme_roots(),
                 'theme'             => $theme,
                 'theme_dir_name'    => $theme_dir_name,
                 'theme_name'        => wp_get_theme()->Name
@@ -70,7 +71,16 @@
         {
             register_activation_hook($this->Path_Get('plugin_file_index'), array('MW_Polylang_Theme_Strings', 'Install'));
             register_uninstall_hook($this->Path_Get('plugin_file_index'), array('MW_Polylang_Theme_Strings', 'Uninstall'));
-            add_action('init', array($this, 'PLL_Strings_Init'));
+
+            if (!is_admin() && function_exists(self::$pll_f))
+            {
+                add_action('init', array($this, 'Theme_Current_PLL_Strings_Init'));
+            }
+            else
+            if (self::Is_PLL_Strings_Settings_Page())
+            {
+                add_action('init', array($this, 'Themes_PLL_Strings_Init'));
+            }
         }
 
         public function Path_Get($key)
@@ -81,7 +91,34 @@
             }
         }
 
-        private function PLL_Strings_Scan()
+        static function Files_Recursive_Get($dir)
+        {
+            $files = array();
+
+            if ($h = opendir($dir))
+            {
+                while (($item = readdir($h)) !== false)
+                {
+                    $f = $dir . '/' . $item;
+
+                    if (is_file($f))
+                    {
+                        $files[] = $f;
+                    }
+                    else
+                    if (is_dir($f) && !preg_match("/^[\.]{1,2}$/uis", $item))
+                    {
+                        $files = array_merge($files, self::Files_Recursive_Get($f));
+                    }
+                }
+
+                closedir($h);
+            }
+
+            return $files;
+        }
+
+        static function Is_PLL_Strings_Settings_Page()
         {
             if
             (
@@ -91,43 +128,91 @@
                 (isset($_REQUEST['tab']) && $_REQUEST['tab'] == 'strings')
             )
             {
-                $data = array();
-                $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($this->Path_Get('theme')));
-
-                foreach($files as $k => $v)
-                {
-                    if (preg_match("/\/.*?\.(php|inc)$/uis", $k))
-                    {
-                        preg_match_all("/pll_[_e][\s]*\([\s]*[\'\"](.*?)[\'\"][\s]*\)/uis", file_get_contents($k), $m);
-
-                        if (count($m[0]))
-                        {
-                            foreach ($m[1] as $mv)
-                            {
-                                if (!in_array($mv, $data))
-                                {
-                                    $data[] = $mv;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                update_option(self::$prefix . $this->Path_Get('theme_dir_name') . '_data', $data);
+                return true;
             }
         }
 
-        public function PLL_Strings_Init()
+        private function Themes_PLL_Strings_Scan()
         {
-            if (function_exists(self::$pll_f))
-            {
-                $data = get_option(self::$prefix . $this->Path_Get('theme_dir_name') . '_data');
+            $themes = wp_get_themes();
 
-                if (is_array($data) && count($data))
+            if (count($themes))
+            {
+                foreach ($themes as $theme_dir_name => $theme)
                 {
-                    foreach ($data as $v)
+                    $data = array(
+                        'name'    => $theme->Name,
+                        'strings' => array()
+                    );
+
+                    $theme_path = $theme->theme_root . '/' . $theme_dir_name;
+
+                    if (file_exists($theme_path))
                     {
-                        pll_register_string($v, $v, __('Theme') . ' (' . $this->Path_Get('theme_name') . ')');
+                        $files = self::Files_Recursive_Get($theme_path);
+
+                        foreach($files as $v)
+                        {
+                            if (preg_match("/\/.*?\.(php|inc)$/uis", $v))
+                            {
+                                preg_match_all("/\<\?.*?\?\>/uis", file_get_contents($v), $p);
+
+                                if (count($p[0]))
+                                {
+                                    foreach ($p[0] as $pv)
+                                    {
+                                        preg_match_all("/pll_[_e][\s]*\([\s]*[\'\"](.*?)[\'\"][\s]*\)/uis", $pv, $m);
+
+                                        if (count($m[0]))
+                                        {
+                                            foreach ($m[1] as $mv)
+                                            {
+                                                if (!in_array($mv, $data))
+                                                {
+                                                    $data['strings'][] = $mv;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        update_option(self::$prefix . $theme_dir_name . '_data', $data);
+                    }
+                }
+            }
+        }
+
+        public function Theme_Current_PLL_Strings_Init()
+        {
+            $data = get_option(self::$prefix . $this->Path_Get('theme_dir_name') . '_data');
+
+            if (is_array($data) && is_array($data['strings']) && count($data['strings']))
+            {
+                foreach ($data['strings'] as $v)
+                {
+                    pll_register_string($v, $v, __('Theme') . ': ' . $data['name']);
+                }
+            }
+        }
+
+        public function Themes_PLL_Strings_Init()
+        {
+            $themes = wp_get_themes();
+
+            if (count($themes))
+            {
+                foreach ($themes as $theme_dir_name => $theme)
+                {
+                    $data = get_option(self::$prefix . $theme_dir_name . '_data');
+
+                    if (is_array($data) && is_array($data['strings']) && count($data['strings']))
+                    {
+                        foreach ($data['strings'] as $v)
+                        {
+                            pll_register_string($v, $v, __('Theme') . ': ' . $data['name']);
+                        }
                     }
                 }
             }
