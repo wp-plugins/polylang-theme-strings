@@ -69,8 +69,8 @@
 
         private function Plugin_Hooks_Init()
         {
-            register_activation_hook($this->Path_Get('plugin_file_index'), array('MW_Polylang_Theme_Strings', 'Install'));
-            register_uninstall_hook($this->Path_Get('plugin_file_index'), array('MW_Polylang_Theme_Strings', 'Uninstall'));
+            register_activation_hook($this->Path_Get('plugin_file_index'), 'Install');
+            register_uninstall_hook($this->Path_Get('plugin_file_index'), 'Uninstall');
 
             if (!is_admin() && function_exists(self::$pll_f))
             {
